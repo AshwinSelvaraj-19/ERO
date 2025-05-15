@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERO - Route Results</title>
+  <link rel="stylesheet" href="mainpage.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="center-quote">"Every Second Counts. Optimize the Route. Save a Life."</div>
+    <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+  </header>
+
+  <div id="map" style="height: 90vh; width: 100%;"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const ambulance = urlParams.get("ambulance");
+    const accident = urlParams.get("accident");
+    const hospital = urlParams.get("hospital");
+
+    if (!ambulance || !accident || !hospital) {
+      alert("Missing location data. Please go back and enter all locations.");
+      window.location.href = "mainpage.html";
+    }
+
+    function parseLatLng(str) {
+      const parts = str.split(",");
+      return [parseFloat(parts[0]), parseFloat(parts[1])];
+    }
+
+    const ambulanceCoords = parseLatLng(ambulance);
+    const accidentCoords = parseLatLng(accident);
+    const hospitalCoords = parseLatLng(hospital);
+
+    if (!ambulanceCoords || !accidentCoords || !hospitalCoords) {
+      alert("Invalid coordinate format.");
+      window.location.href = "mainpage.html";
+    }
+
+    const map = L.map("map").setView(ambulanceCoords, 13);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "© OpenStreetMap contributors",
+    }).addTo(map);
+
+    L.Routing.control({
+      waypoints: [
+        L.latLng(...ambulanceCoords),
+        L.latLng(...accidentCoords),
+        L.latLng(...hospitalCoords)
+      ],
+      router: L.Routing.osrmv1({
+        serviceUrl: 'https://router.project-osrm.org/route/v1'
+      }),
+      routeWhileDragging: false,
+      showAlternatives: false,
+      fitSelectedRoutes: true,
+      createMarker: function(i, wp) {
+        const icons = ["🚑 Ambulance", "⚠️ Accident", "🏥 Hospital"];
+        return L.marker(wp.latLng).bindPopup(icons[i]);
+      },
+      lineOptions: {
+        styles: [{ color: "red", weight: 5 }]
+      }
+    }).addTo(map);
+
+  </script>
+</body>
+</html>

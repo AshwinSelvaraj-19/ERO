@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ERO - Emergency Route Optimizer</title>
+  <link rel="stylesheet" href="mainpage.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="center-quote">"Every Second Counts. Optimize the Route. Save a Life."</div>
+    <button class="logout-btn" onclick="window.location.href='index.html'">Logout</button>
+  </header>
+
+  <div class="glass-card">
+    <h1>🚑 Emergency Route Optimizer</h1>
+    <p>Plan AI-driven, fastest routes in emergencies</p>
+
+    <table class="input-table">
+      <tr>
+        <td><label for="ambulance">Ambulance Location</label></td>
+        <td><input type="text" id="ambulance" placeholder="Ambulance location" required /></td>
+      </tr>
+      <tr>
+        <td><label for="accident">Accident Location</label></td>
+        <td><input type="text" id="accident" placeholder="Accident Location" required /></td>
+      </tr>
+      <tr>
+        <td><label for="hospital">Hospital Location</label></td>
+        <td><input type="text" id="hospital" placeholder="Hospital Location" required /></td>
+      </tr>
+    </table>
+
+    <button onclick="goToMap()">Calculate Best Route</button>
+  </div>
+
+  <script>
+    async function geocode(location) {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}`;
+      const res = await fetch(url, {
+        headers: {
+          'Accept-Language': 'en',
+          'User-Agent': 'EmergencyRouteOptimizer/1.0 (your_email@example.com)'
+        }
+      });
+      const data = await res.json();
+      if (data.length > 0) {
+        return {
+          lat: data[0].lat,
+          lon: data[0].lon,
+          display_name: data[0].display_name
+        };
+      } else {
+        throw new Error(`Location not found: "${location}"`);
+      }
+    }
+
+    async function goToMap() {
+      const ambulanceInput = document.getElementById('ambulance').value.trim();
+      const accidentInput = document.getElementById('accident').value.trim();
+      const hospitalInput = document.getElementById('hospital').value.trim();
+
+      if (!ambulanceInput || !accidentInput || !hospitalInput) {
+        alert("Please fill in all fields.");
+        return;
+      }
+
+      try {
+        const ambulance = await geocode(ambulanceInput);
+        const accident = await geocode(accidentInput);
+        const hospital = await geocode(hospitalInput);
+
+        const params = new URLSearchParams({
+          ambulance: `${ambulance.lat},${ambulance.lon}`,
+          accident: `${accident.lat},${accident.lon}`,
+          hospital: `${hospital.lat},${hospital.lon}`
+        });
+
+        window.location.href = `results.html?${params.toString()}`;
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+  </script>
+</body>
+</html>
