@@ -52,5 +52,3 @@ Vision forward—what’s next for ERO?
 4. Push it: `git push origin feature/YourFeature`  
 5. Open a Pull Request — let’s elevate this thing.
 
-###  License
-Distributed under the [MIT License](https://opensource.org/licenses/MIT) — do your thing.
